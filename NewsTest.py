@@ -1,39 +1,15 @@
-from collections import Counter
-import re
-import chardet
+import json
+import collections
+from pprint import pprint
+import xml.etree.ElementTree as ET
 
 
-class News():
-
-    def count(self, word_arr, file_name):
-        result = Counter(word_arr)
-        try:
-            data = result.most_common(self.most_common)
-            print('File: {}\nMost common data:\n{}\n'.format(file_name, data))
-        except:
-            raise ValueError('error getting data from file')
-
-    def encode(self):
-        for file_name in self.file_names:
-            with open(file_name[0], 'rb') as f:
-                rawdata = f.read(
-                    30)  # читаем первые 30 символов для определения кодировки. В файлах текст начинается с первой строки
-                result = chardet.detect(rawdata)
-                file_name[1] = result['encoding']
-
-    def pars(self):
-        for file_name in self.file_names:
-            word_arr = []
-            with open(file_name[0], 'r', encoding=file_name[1]) as f:
-                for line in f:
-                    word_arr += self.pattern.findall(line)
-            self.count(word_arr, file_name[0])
-
-    def __init__(self, most_common=10):
-        self.most_common = most_common
-        self.file_names = [["newsafr.txt", ""], ["newscy.txt", ""], ["newsfr.txt", ""],
-                           ["newsit.txt", ""]]  # массив хранения имен файлов и кодировок
-        self.pattern = re.compile('[\w]{6,}')  # регулярное выражение для поиска слов в строке у которых >= 6 букв 6years ag Update N14.py
-        self.encode()
-        self.pars()
-        test = News()
+def read_json(file_path, len_word=6, top_words=10):
+   with open(file_path, 'r', encoding='utf-8') as news_file:
+       news = json.load(news_file)
+       description_words = []
+       for item in news['rss']['channel']['items']:
+           description = [word for word in item['description'].split(' ') if len(word) > len_word]
+           description_words.extend(description)
+       counter_words = collections.Counter(description_words)
+       pprint(counter_words.most_common(top_words))
